@@ -3,12 +3,13 @@ using System.Web.Mvc;
 using System.Web;
 using System;
 using FileServer.Service;
+using System.Configuration;
 
 namespace FileServer.Controllers
 {
     public class FileController : Controller
     {
-        private static IFileService fileService = FileServiceFactory.GetFileService("Azure");
+        private static IFileService fileService = FileServiceFactory.GetFileService(ConfigurationManager.AppSettings["Mode"]);
         
         public ActionResult Index()
         {
@@ -18,7 +19,16 @@ namespace FileServer.Controllers
         [HttpPost]
         public ActionResult Upload()
         {
-            ThreadPool.QueueUserWorkItem(UploadFiles);
+            try
+            {
+                ThreadPool.QueueUserWorkItem(UploadFiles);
+                ViewBag.Message = "Queued for uploading";
+            }
+            catch
+            {
+                ViewBag.Message = "Error uploading the file";
+            }
+
             return View();
         }
         
